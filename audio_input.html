@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<title>audio</title>
+
+<link href="css/style.css" rel="stylesheet" type="text/css">
+    <style>
+    
+    input{       
+        color:transparent;
+        background-color:transparent;
+        border:0px;
+        width:15px;
+
+        -webkit-transform: scale(3.0, 3.0);
+        -moz-transform: scale(3.0, 3.0);
+        -ms-transform: scale(3.0, 3.0);
+        transform: scale(3.0, 3.0);
+        
+        }
+    
+    
+    </style>
+</head>
+<body>
+    <br /><br /><br /><br /><br /><br /><br />
+    <input id="audio_input" type="text" x-webkit-speech speech  onwebkitspeechchange="AV.listen()" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
+    
+    <script>
+        
+        if (typeof AV !== 'object'){
+            AV = {}
+        }
+                
+            
+        AV = (function () {
+            // -- Private Variables, Methods --------------------------------------------------------
+            var xxxx;
+        
+            // -- Public Vadiables, Methods --------------------------------------------------------
+            return {
+                init: function init(){
+                    
+                    console.log('initialization')
+                    $('#audio_input').click();
+                    
+                },
+                
+                listen: function listen(){
+                    var parseVal = $('#audio_input').val();
+                    
+                    $('body').attr('style', 'background: '+ parseVal +'');
+                } 
+            }
+        }());
+            
+            
+        // -- on DOM ready --------------------------------------------------------
+            $(document).ready(function () {
+                AV.init();
+            });
+    
+    </script>
+</body>
+</html>
