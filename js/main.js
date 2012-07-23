@@ -7,10 +7,18 @@
 *
 */
 
-var mouseX = 0, mouseY = 0, windowHalfX = window.innerWidth / 2, windowHalfY = window.innerHeight / 2, camera, scene, renderer, material, container;
-var ringcount = 560;
-var source;
-var analyser;
+
+
+var elems = 100,
+	barsHTML = '';
+
+$('body').append('<p class="status">Freq Rate: <span id="freqRate"></span> : <span id="barHeight"></span></p>');
+for (var i = elems - 1; i >= 0; i--) {
+	barsHTML += '<div class="highFq"></div><div class="lowFq"></div>';
+};
+$('#container').append(barsHTML);
+
+var windowHalfX = window.innerWidth / 2, windowHalfY = window.innerHeight / 2, container;
 var buffer;
 var audioBuffer;
 var dropArea;
@@ -18,7 +26,6 @@ var audioContext;
 var source;
 var processor;
 var analyser;
-var xhr;
 var started = false;
 
 $(document).ready(function() {
@@ -44,17 +51,6 @@ function init() {
 	//init 3D scene
 	container = document.createElement('div');
 	document.body.appendChild(container);
-	camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000000);
-	camera.position.z = 2000;
-	scene = new THREE.Scene();
-	scene.add(camera);
-	renderer = new THREE.WebGLRenderer({
-		antialias : false,
-		sortObjects : false
-	});
-	renderer.setSize(window.innerWidth, window.innerHeight);
-
-	container.appendChild(renderer.domElement);
 
 	// stop the user getting a text cursor
 	document.onselectStart = function() {
@@ -70,27 +66,7 @@ function init() {
 
 	onWindowResize(null);
 	audioContext = new window.webkitAudioContext();
-
-	// Bind form control elements event
-	bindControl();
 }
-
-/*
-function loadSampleAudio() {
-	$('#loading').text("loading...");
-
-	source = audioContext.createBufferSource();
-	analyser = audioContext.createAnalyser();
-	analyser.fftSize = 1024;
-
-	// Connect audio processing graph
-	source.connect(analyser);
-	analyser.connect(audioContext.destination);
-
-	loadAudioBuffer("audio/Beytah_-_10_-_Screw_Base.mp3");
-}
-*/
-
 
 function loadAudioBuffer(url) {
 	// Load asynchronously
@@ -122,9 +98,22 @@ function finishLoad() {
 function onWindowResize(event) {
 	windowHalfX = window.innerWidth / 2;
 	windowHalfY = window.innerHeight / 2;
-	camera.aspect = window.innerWidth / window.innerHeight;
-	camera.updateProjectionMatrix();
-	renderer.setSize(window.innerWidth, window.innerHeight);
+
+	var	barLeft = window.innerWidth / elems,
+		barWidth = barLeft - 1,
+		totalLeft;
+
+	function updateWidth(i) {
+		totalLeft = i * barLeft;
+		$(this).css({
+			width: barWidth,
+			left: totalLeft
+		});
+	}
+
+	$('#container').find('.highFq').each(updateWidth);
+	$('#container').find('.lowFq').each(updateWidth);
+
 }
 
 function animate() {
@@ -133,23 +122,9 @@ function animate() {
 }
 
 function render() {
-	LoopVisualizer.update({
-		ringcount: ringcount
-	});
+	LoopVisualizer.update();
 
-	var xrot = mouseX * Math.PI*2 + Math.PI;
-	var yrot = mouseY * Math.PI*2 + Math.PI;
-
-	LoopVisualizer.loopHolder.rotation.x += (-yrot - LoopVisualizer.loopHolder.rotation.x) * 0.3;
-	LoopVisualizer.loopHolder.rotation.y += (xrot - LoopVisualizer.loopHolder.rotation.y) * 0.3;
-
-	renderer.render(scene, camera);
 }
-
-// $(window).mousewheel(function(event, delta) {
-// 	//set camera Z
-// 	camera.position.z -= delta * 50;
-// });
 
 function onDocumentDragOver(evt) {
 	evt.stopPropagation();
@@ -163,10 +138,8 @@ function onDocumentDrop(evt) {
 
 	//clean up previous mp3
 	if (source) source.disconnect();
-	LoopVisualizer.remove();
 
-	$('#loading').show();
-	$('#loading').text("loading...");
+	$('#loading').show().text("loading...");
 
 	var droppedFiles = evt.dataTransfer.files;
 
@@ -189,7 +162,6 @@ function initAudio(data) {
 			source.buffer = buffer;
 			createAudio();
 		}, function(e) {
-			console.log(e);
 			$('#loading').text("cannot decode mp3");
 		});
 	} else {
@@ -202,7 +174,7 @@ function initAudio(data) {
 function createAudio() {
 	processor = audioContext.createJavaScriptNode(2048 , 1 , 1 );
 	//processor.onaudioprocess = processAudio;
-
+	
 	analyser = audioContext.createAnalyser();
 
 	source.connect(audioContext.destination);
@@ -220,23 +192,8 @@ function startViz(){
 	$('#loading').hide();
 	LoopVisualizer.init();
 
-	if (!started){
+	if (!started) {
 		started = true;
 		animate();
 	}
-}
-
-function bindControl() {
-	$('#cameraDistance').on('change', function() {
-		camera.position.z = this.value;
-	});
-	$('#cameraX').on('change', function() {
-		mouseX = this.value;
-	});
-	$('#cameraY').on('change', function() {
-		mouseY = this.value;
-	});
-	$('#ringcount').on('change', function() {
-		ringcount = this.value;
-	});
 }

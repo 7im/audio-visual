@@ -1,5 +1,5 @@
 var LoopVisualizer = (function() {
-
+	
 	var RINGCOUNT = 560;
 	var SEPARATION = 30;
 	var INIT_RADIUS = 50;
@@ -13,148 +13,110 @@ var LoopVisualizer = (function() {
 	var levels = [];
 	var waves = [];
 	var colors = [];
-	var loopHolder = new THREE.Object3D();
-	var perlin = new ImprovedNoise();
-	var noisePos = 0;
 	var freqByteData;
 	var timeByteData;
+	var eleCount = 0;
 
 
 	function init() {
 
-		rings = [];
-		geoms = [];
-		materials = [];
-		levels = [];
-		waves = [];
-		colors = [];
-
-		////////INIT audio in
+		// INIT audio in
 		freqByteData = new Uint8Array(analyser.frequencyBinCount);
 		timeByteData = new Uint8Array(analyser.frequencyBinCount);
-
-		scene.add(loopHolder);
-
-		var scale = 1;
-		var alt = 0;
 
 		var emptyBinData = [];
 		for(var j = 0; j < SEGMENTS; j++) {
 			emptyBinData.push(0);
 		}
 
-		var arcShape = new THREE.Shape();
-		arcShape.moveTo( 0, 0 );
-		arcShape.arc( 0, 0, INIT_RADIUS, 0, Math.PI*2, false );
-
-		//create rings
-		for(var i = 0; i < RINGCOUNT; i++) {
-
-			var m = new THREE.LineBasicMaterial( { color: 0xffffff,
-				linewidth: 1 ,
-				opacity : 0.7,
-				blending : THREE.AdditiveBlending,
-				depthTest : false,
-				transparent : true
-
-			});
-			var circlePoints = arcShape.createPointsGeometry(128);
-			var line = new THREE.Line( circlePoints, m);
-
-			rings.push(line);
-			geoms.push(circlePoints);
-			materials.push(m);
-			scale *= 1.05;
-			line.scale.x = scale;
-			line.scale.y = scale;
-
-			loopHolder.add(line);
-
-			levels.push(0);
-			waves.push(emptyBinData);
-			colors.push(0);
-
-		}
-
 	}
 
 	function remove(from, to) {
 
-		if (typeof from === 'number' && typeof to === 'number') {
-			for(; from < to; from++) {
-				loopHolder.remove(rings[from]);
-			}
-		} else if (loopHolder) {
-			for (var i = 0; i < RINGCOUNT; i++) {
-				loopHolder.remove(rings[i]);
-			}
-		}
+		// if (typeof from === 'number' && typeof to === 'number') {
+		// 	for(; from < to; from++) {
+		// 		loopHolder.remove(rings[from]);
+		// 	}
+		// } else if (loopHolder) {
+		// 	for (var i = 0; i < RINGCOUNT; i++) {
+		// 		loopHolder.remove(rings[i]);
+		// 	}
+		// }
 	}
 
-	function update(config) {
-
-		config.ringcount = parseFloat(config.ringcount);
-
-		if (currentRingCount > config.ringcount) {
-			remove(config.ringcount, currentRingCount);
-		}
-
-		currentRingCount = config.ringcount || RINGCOUNT;
+	function update() {
 
 		analyser.smoothingTimeConstant = 0.1;
 		analyser.getByteFrequencyData(freqByteData);
 		analyser.getByteTimeDomainData(timeByteData);
-
+		
 		//get average level
 		var length = freqByteData.length;
+		var eleLength = $(".highFq").length;
 		var sum = 0;
+		
 		for(var j = 0; j < length; ++j) {
 			sum += freqByteData[j];
 		}
 		var aveLevel = sum / length;
 		var scaled_average = (aveLevel / 256) * VOL_SENS; //256 the highest a level can be?
 
-		//get noise color posn
-		noisePos += 0.005;
-		var n = Math.abs(perlin.noise(noisePos, 0, 0));
-
-		levels.push(scaled_average);
-		//levels.push(binData);
-		waves.push(timeByteData);
-		colors.push(n);
-
-		levels.shift(1);
-		waves.shift(1);
-		colors.shift(1);
-
-		for(var ii = 0; ii < currentRingCount ; ii++) {
-
-			var ringId = currentRingCount - ii - 1;
-
-			for(var jj = 0; jj < SEGMENTS; jj++) {
-				geoms[ii].vertices[jj].position.z = (waves[ringId][jj])*2;
-			}
-
-			//link up last segment
-			geoms[ii].vertices[SEGMENTS].position.z = geoms[ii].vertices[0].position.z;
-
-			var normLevel = levels[ringId];
-			var hue = colors[ringId];
-
-			materials[ii].color.setHSV(hue, 1, normLevel);
-			materials[ii].linewidth =normLevel*3;
-			materials[ii].opacity = normLevel ;
-			geoms[ii].__dirtyVertices = true;
-			geoms[ii].__dirtyColors = true;
-			rings[ii].scale.z = normLevel;
+		var colorInt = parseInt(scaled_average * 1000);
+		
+		$('#freqRate').html(colorInt);
+		  
+		 var cssObj = {
+			'font-weight' : '',
+			'background-color' : 'rgb(0,40, ' + colorInt +')'
+		};
+		
+		if (eleCount < eleLength){
+			eleCount = eleCount + 1
+		} else {
+			eleCount = 0;
 		}
-
+		
+		var highFqBar = colorInt + 50,
+			lowFqBar = colorInt - 10
+		
+		$('#barHeight').html(highFqBar);
+		
+		$('.highFq:eq(' + eleCount + ')')
+			.css(cssObj)
+			.animate({
+				opacity: .9,
+				//left: '+=50',
+				height: highFqBar
+			}, 0, function() {
+				// Animation complete.
+				$(this).animate({
+					opacity: .9,
+					//left: '+=50',
+					height: 60
+				}, 4000, function() {
+					//callback
+				});
+			});
+		
+		$('.lowFq:eq(' + eleCount + ')').animate({
+			opacity: .9,
+			//left: '+=50',
+			height: lowFqBar
+		}, 0, function() {
+			// Animation complete.
+			$(this).animate({
+				//left: '+=50',
+				height: 40
+			}, 1000, function() {
+				//callback
+			});
+		});
+		
 	}
 
 	return {
 		init:init,
 		update:update,
-		remove:remove,
-		loopHolder:loopHolder
+		remove:remove
 	};
 	}());
