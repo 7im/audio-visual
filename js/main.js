@@ -63,6 +63,7 @@ function init() {
 	$(window).resize(onWindowResize);
 	document.addEventListener('drop', onDocumentDrop, false);
 	document.addEventListener('dragover', onDocumentDragOver, false);
+	document.addEventListener('mousemove', onDocumentMouseMove, false);
 
 	onWindowResize(null);
 	audioContext = new window.webkitAudioContext();
@@ -88,12 +89,6 @@ function finishLoad() {
 	source.noteOn(0.0);
 	startViz();
 }
-
-// TO REMOVE
-// function onDocumentMouseMove(event) {
-// 	mouseX = (event.clientX - windowHalfX)*2;
-// 	mouseY = (event.clientY - windowHalfY)*2;
-// }
 
 function onWindowResize(event) {
 	windowHalfX = window.innerWidth / 2;
@@ -151,7 +146,19 @@ function onDocumentDrop(evt) {
 	};
 
 	reader.readAsArrayBuffer(droppedFiles[0]);
+}
 
+function onDocumentMouseMove(event) {
+	// mouseX = (event.clientX - windowHalfX) * 2;
+	// mouseY = (event.clientY - windowHalfY) * 2;
+	mouseX = Math.round((event.clientX + windowHalfX) / 2 / window.innerWidth * 100);
+	mouseY = Math.round((event.clientY + windowHalfY) / 2 / window.innerHeight * 100);
+	console.log(mouseX);
+	console.log(mouseY);
+	$('.tunnelContainer').css({
+		'-webkit-perspective-origin-x': mouseX + '%',
+		'-webkit-perspective-origin-y': mouseY + '%'
+	});
 }
 
 function initAudio(data) {

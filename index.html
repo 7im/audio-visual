@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<title>audio</title>
-	
+
 	<link href="css/style.css" rel="stylesheet" type="text/css">
 	<style>
 	.status {
@@ -17,14 +17,75 @@
 		position:absolute; bottom:0; left:0; height:60px;
 		background: #ff0000;
 	}
+	.tunnelContainer {
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		-webkit-perspective-origin-x: 50%;
+		-webkit-perspective-origin-y: 50%;
+		-webkit-perspective: 300px;
+	}
+	.tunnel {
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		-webkit-transform-style: preserve-3d;
+		-webkit-transform: translateZ( -100px );
+	}
+	.xSide {
+		top: 0;
+		position: absolute;
+		width: 200px;
+		height: 100%;
+		background: -webkit-linear-gradient(left, #aebcbf 0%,#6e7774 50%,#6e7774 51%,#aebcbf 100%);
+	}
+	.ySide {
+		left: 0;
+		position: absolute;
+		width: 100%;
+		height: 200px;
+		background: -webkit-linear-gradient(top, #aebcbf 0%,#6e7774 50%,#6e7774 51%,#aebcbf 100%);
+	}
+	.wallTop {
+		top: 0;
+		-webkit-transform: rotateX( 90deg ) translateZ( 100px );
+	}
+	.wallLeft {
+		left: 0;
+		-webkit-transform: rotateY( -90deg ) translateZ( 100px );
+	}
+	.wallBottom {
+		bottom: 0;
+		-webkit-transform: rotateX( -90deg ) translateZ( 100px );
+	}
+	.wallRight {
+		right: 0;
+		-webkit-transform: rotateY( 90deg ) translateZ( 100px );
+	}
+	#container {
+		position: absolute;
+		top: 0;
+		right: 0;
+		width: 100%;
+		height: 100%;
+		-webkit-transform: translateZ( -100px )
+	}
 	</style>
 </head>
 <body>
-	
-	<div id="container"></div>
-	
+
+	<div class="tunnelContainer">
+		<div class="tunnel">
+			<div class="wallTop ySide"></div>
+			<div class="wallLeft xSide"></div>
+			<div class="wallBottom ySide"></div>
+			<div class="wallRight xSide"></div>
+			<div id="container"></div>
+		</div>
+	</div>
+
 	<div id="loading"></div>
-	
+
 	<script src="js/RequestAnimationFrame.js"></script>
 	<script src="js/jquery-1.7.1.min.js"></script>
 	<script src="js/Visualizer.js"></script>

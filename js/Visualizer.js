@@ -67,7 +67,10 @@ var LoopVisualizer = (function() {
 		  
 		 var cssObj = {
 			'font-weight' : '',
-			'background-color' : 'rgb(0,40, ' + colorInt +')'
+			// Blue
+			// 'background-color' : 'rgb(0,40, ' + colorInt +')'
+			// Red
+			'background-color' : 'rgb(' + colorInt +', 40, 0)'
 		};
 		
 		if (eleCount < eleLength){
@@ -88,6 +91,8 @@ var LoopVisualizer = (function() {
 				//left: '+=50',
 				height: highFqBar
 			}, 0, function() {
+				console.log(highFqBar);
+				console.log(colorInt);
 				// Animation complete.
 				$(this).animate({
 					opacity: .9,
